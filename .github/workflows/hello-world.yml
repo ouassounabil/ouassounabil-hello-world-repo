@@ -14,7 +14,6 @@ name: Hello World
           - TST
           - PPR
           - PRD
-
 jobs:
   hello-job:
     runs-on: ubuntu-latest
