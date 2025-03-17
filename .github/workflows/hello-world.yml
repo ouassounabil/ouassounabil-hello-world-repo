@@ -1,8 +1,25 @@
 name: Hello World
-'on': push
+'on': 
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Choose environment'
+        required: true
+        default: DEV
+        type: choice
+        options:
+          - DEV
+          - UAT
+          - STG
+          - TST
+          - PPR
+          - PRD
+
 jobs:
   hello-job:
     runs-on: ubuntu-latest
     steps:
       - name: Echo text
         run: 'echo "Hello, world!"'
+        env:
+          ENVIRONMENT: ${{ github.event.inputs.environment }}
