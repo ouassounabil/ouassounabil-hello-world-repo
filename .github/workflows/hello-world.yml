@@ -1,5 +1,6 @@
 name: Hello World
-'on': 
+
+on:
   workflow_dispatch:
     inputs:
       environment:
@@ -14,11 +15,10 @@ name: Hello World
           - TST
           - PPR
           - PRD
+
 jobs:
   hello-job:
     runs-on: ubuntu-latest
     steps:
-      - name: Echo text
-        run: 'echo "Hello, world!"'
-        env:
-          ENVIRONMENT: ${{ github.event.inputs.environment }}
+      - name: Echo environment
+        run: echo "Selected environment: ${{ github.event.inputs.environment }}"      
