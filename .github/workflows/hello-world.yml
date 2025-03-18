@@ -26,9 +26,9 @@ jobs:
 
       ## Build scripts here (see the complete example on GitHub)
 
-      - if: github.event.inputs.publish_artifacts == 'true'
-        name: Publish Artifacts
-        uses: actions/upload-artifact@v2
+      # - if: github.event.inputs.publish_artifacts == 'true'
+      #   name: Publish Artifacts
+      #   uses: actions/upload-artifact@v2
         with:
           name: artifacts
           path: build/web
