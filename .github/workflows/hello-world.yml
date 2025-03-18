@@ -1,34 +1,45 @@
-name: Hello World
+name: Terraform Workflow
 on:
   workflow_dispatch:
     inputs:
-      flutter_version:
-        description: 'Framework version'
+      environment:
+        description: 'Environment to deploy (dev, ppr, prd)'
         required: true
-        default: '2.5.3'
-      publish_artifacts:
-        description: 'Publish artifacts'
-        required: true
-        default: 'true'
-
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - ppr
+          - prd
 jobs:
-  build_web:
+  terraform:
     runs-on: ubuntu-latest
-
+    env:
+      TF_VERSION: '1.0.0'
+      TF_WORKING_DIR: './terraform'  
     steps:
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
-      - name: Set Flutter version
-        uses: subosito/flutter-action@v2.2.0
-        with:
-          flutter-version: '${{ github.event.inputs.flutter_version }}'
-
-      ## Build scripts here (see the complete example on GitHub)
-
-      # - if: github.event.inputs.publish_artifacts == 'true'
-      #   name: Publish Artifacts
-      #   uses: actions/upload-artifact@v2
-        # with:
-        #   name: artifacts
-        #   path: build/web
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ${{ env.TF_WORKING_DIR }}
+    - name: Terraform Plan
+      run: terraform plan -var-file=env/${{ github.event.inputs.environment }}.tfvars
+      working-directory: ${{ env.TF_WORKING_DIR }}
+    - name: Terraform Apply
+      if: github.event.inputs.environment != 'prd'
+      run: terraform apply -auto-approve -var-file=env/${{ github.event.inputs.environment }}.tfvars
+      working-directory: ${{ env.TF_WORKING_DIR }}
+    - name: Terraform Apply (Manual Approval for PRD)
+      if: github.event.inputs.environment == 'prd'
+      uses: hmarr/auto-approve-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+      run: terraform apply -var-file=env/${{ github.event.inputs.environment }}.tfvars
+      working-directory: ${{ env.TF_WORKING_DIR }}
+    - name: Post Apply Actions
+      run: echo "Terraform apply completed for ${{ github.event.inputs.environment }} environment"
